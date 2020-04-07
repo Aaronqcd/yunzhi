@@ -87,7 +87,7 @@ public class LoginController extends BaseController{
 		}
 		
 		//验证码
-		String randCode = req.getParameter("randCode");
+		/*String randCode = req.getParameter("randCode");
 		if (StringUtils.isEmpty(randCode)) {
 			j.setMsg(MutiLangUtil.getLang("common.enter.verifycode"));
 			j.setSuccess(false);
@@ -97,6 +97,11 @@ public class LoginController extends BaseController{
 			j.setSuccess(false);
 			//IP黑名单 check
 		} else if (userService.isInBlackList(IpUtil.getIpAddr(req))){
+			log.info("Username:{} ,IP: {} 进入黑名单!", user.getUserName(), IpUtil.getIpAddr(req));
+			j.setMsg(MutiLangUtil.getLang("common.blacklist.error"));
+			j.setSuccess(false);
+		}*/
+		if (userService.isInBlackList(IpUtil.getIpAddr(req))){
 			log.info("Username:{} ,IP: {} 进入黑名单!", user.getUserName(), IpUtil.getIpAddr(req));
 			j.setMsg(MutiLangUtil.getLang("common.blacklist.error"));
 			j.setSuccess(false);
