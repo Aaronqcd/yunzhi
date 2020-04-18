@@ -3,7 +3,6 @@ package org.jeecgframework.web.system.controller.core;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,12 +24,10 @@ import org.jeecgframework.core.common.controller.BaseController;
 import org.jeecgframework.core.common.hibernate.qbc.CriteriaQuery;
 import org.jeecgframework.core.common.model.json.DataGrid;
 import org.jeecgframework.core.common.model.json.Highchart;
-import org.jeecgframework.core.util.DateUtils;
-import org.jeecgframework.core.util.MutiLangUtil;
-import org.jeecgframework.core.util.StringUtil;
-import org.jeecgframework.core.util.oConvertUtils;
+import org.jeecgframework.core.util.*;
 import org.jeecgframework.tag.core.easyui.TagUtil;
 import org.jeecgframework.web.system.pojo.base.TSLog;
+import org.jeecgframework.web.system.pojo.base.TSUser;
 import org.jeecgframework.web.system.service.LogService;
 import org.jeecgframework.web.system.service.SystemService;
 import org.slf4j.Logger;
@@ -80,6 +77,16 @@ public class LogController extends BaseController {
 	}
 
 	/**
+	 * 日志列表页面跳转
+	 *
+	 * @return
+	 */
+	@RequestMapping(params = "newLog")
+	public ModelAndView newLog() {
+		return new ModelAndView("yunzhi/log/newLogList");
+	}
+
+	/**
 	 * easyuiAJAX请求数据
 	 * 
 	 * @param request
@@ -116,6 +123,49 @@ public class LogController extends BaseController {
         	cq.add();
         }
         this.systemService.getDataGridReturn(cq, true);
+		TagUtil.datagrid(response, dataGrid);
+	}
+
+	/**
+	 * easyuiAJAX请求数据
+	 *
+	 * @param request
+	 * @param response
+	 * @param dataGrid
+	 */
+	@RequestMapping(params = "newDatagrid")
+	public void newDatagrid(HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(TSLog.class, dataGrid);
+		TSUser user = ResourceUtil.getSessionUser();
+		cq.eq("userid", user.getId());
+		cq.add();
+
+		//日志级别查询条件
+		String operatetype = request.getParameter("operatetype");
+		if (operatetype != null && !"0".equals(operatetype)) {
+			cq.eq("operatetype", oConvertUtils.getShort(operatetype));
+			cq.add();
+		}
+		//时间范围查询条件
+		String operatetime_begin = request.getParameter("operatetime_begin");
+		String operatetime_end = request.getParameter("operatetime_end");
+		if(oConvertUtils.isNotEmpty(operatetime_begin)){
+			try {
+				cq.ge("operatetime", DateUtils.parseDate(operatetime_begin, "yyyy-MM-dd hh:mm:ss"));
+			} catch (ParseException e) {
+				logger.error(e.toString());
+			}
+			cq.add();
+		}
+		if(oConvertUtils.isNotEmpty(operatetime_end)){
+			try {
+				cq.le("operatetime", DateUtils.parseDate(operatetime_end, "yyyy-MM-dd hh:mm:ss"));
+			} catch (ParseException e) {
+				logger.error(e.toString());
+			}
+			cq.add();
+		}
+		this.systemService.getDataGridReturn(cq, true);
 		TagUtil.datagrid(response, dataGrid);
 	}
 	

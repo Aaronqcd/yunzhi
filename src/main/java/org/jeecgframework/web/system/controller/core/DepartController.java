@@ -104,6 +104,11 @@ public class DepartController extends BaseController {
 		return new ModelAndView("system/depart/departList");
 	}
 
+	@RequestMapping(params = "newDepart")
+	public ModelAndView newDepart() {
+		return new ModelAndView("yunzhi/depart/departList");
+	}
+
 	/**
 	 * easyuiAJAX请求数据
 	 * 
@@ -378,6 +383,12 @@ public class DepartController extends BaseController {
 		request.setAttribute("departid", departid);
 		return new ModelAndView("system/depart/departUserList");
 	}
+
+	@RequestMapping(params = "newUserList")
+	public ModelAndView newUserList(HttpServletRequest request, String departid) {
+		request.setAttribute("departid", departid);
+		return new ModelAndView("yunzhi/depart/departUserList");
+	}
 	
 	/**
 	 * 方法描述:  成员列表dataGrid
@@ -412,6 +423,36 @@ public class DepartController extends BaseController {
 
         //cq.eq("deleteFlag", Globals.Delete_Normal);//删除状态，不删除
         //cq.eq("userType",Globals.USER_TYPE_SYSTEM);//系统用户
+
+		cq.add();
+		this.systemService.getDataGridReturn(cq, true);
+		TagUtil.datagrid(response, dataGrid);
+	}
+
+	@RequestMapping(params = "newUserDatagrid")
+	public void newUserDatagrid(TSUser user,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		if(user!=null&&user.getDepartid()!=null){
+			user.setDepartid(null);//设置用户的所属部门的查询条件为空；
+		}
+		CriteriaQuery cq = new CriteriaQuery(TSUser.class, dataGrid);
+		//查询条件组装器
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, user);
+		String departid = oConvertUtils.getString(request.getParameter("departid"));
+		if (!StringUtil.isEmpty(departid)) {
+			DetachedCriteria dc = cq.getDetachedCriteria();
+			DetachedCriteria dcDepart = dc.createCriteria("userOrgList");
+			dcDepart.add(Restrictions.eq("tsDepart.id", departid));
+			// 这种方式也是可以的
+//            DetachedCriteria dcDepart = dc.createAlias("userOrgList", "userOrg");
+//            dcDepart.add(Restrictions.eq("userOrg.tsDepart.id", departid));
+
+		}
+		Short[] userstate = new Short[] { Globals.User_Normal, Globals.User_ADMIN };
+		cq.in("status", userstate);
+		cq.eq("personType", "2");
+
+		//cq.eq("deleteFlag", Globals.Delete_Normal);//删除状态，不删除
+		//cq.eq("userType",Globals.USER_TYPE_SYSTEM);//系统用户
 
 		cq.add();
 		this.systemService.getDataGridReturn(cq, true);

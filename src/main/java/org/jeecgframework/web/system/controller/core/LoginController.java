@@ -62,7 +62,44 @@ public class LoginController extends BaseController{
 
 		this.userService = userService;
 	}
-	
+
+	@RequestMapping(params = "doRegister")
+	@ResponseBody
+	public AjaxJson doRegister(TSUser user, String role, HttpServletRequest req) {
+		String message;
+		AjaxJson j = new AjaxJson();
+		TSUser users = systemService.findUniqueByProperty(TSUser.class, "userName",user.getUserName());
+		TSDepart depart = systemService.findUniqueByProperty(TSDepart.class, "departname","公司");
+		String roleCode = "";
+		if("1".equals(role)) {
+			roleCode = "partner";
+		}
+		else if("2".equals(role)) {
+			roleCode = "charge";
+		}
+		else if("3".equals(role)) {
+			roleCode = "staff";
+		}
+		TSRole tsRole = systemService.findUniqueByProperty(TSRole.class, "roleCode",roleCode);
+		Short logType=Globals.Log_Type_UPDATE;
+		if (users != null) {
+			message = "用户: " + users.getUserName() + "已经存在";
+		} else {
+			user.setPassword(PasswordUtil.encrypt(user.getUserName(), oConvertUtils.getString(req.getParameter("password")), PasswordUtil.getStaticSalt()));
+//			user.setStatus(Globals.User_Normal);
+			user.setDeleteFlag(Globals.Delete_Normal);
+			//默认添加为系统用户
+			user.setUserType(Globals.USER_TYPE_SYSTEM);
+			user.setDepartid(depart.getId());
+			this.userService.saveOrUpdate(user, depart.getId().split(","), tsRole.getId().split(","));
+			message = "用户: " + user.getUserName() + "注册资料提交成功";
+			logType=Globals.Log_Type_INSERT;
+		}
+		systemService.addLog(message, logType, Globals.Log_Leavel_INFO);
+		j.setMsg(message);
+		log.info("["+IpUtil.getIpAddr(req)+"][注册资料提交成功]"+message);
+		return j;
+	}
 
 	/**
 	 * 【登录逻辑】检查用户账号、密码、登录验证码
@@ -210,6 +247,7 @@ public class LoginController extends BaseController{
 			}
 			
             modelMap.put("roleName", roles.length()>3?roles.substring(0,3)+"...":roles);
+			modelMap.put("rolename", roles);
             modelMap.put("userName", user.getUserName().length()>5?user.getUserName().substring(0, 5)+"...":user.getUserName());
             modelMap.put("portrait", user.getPortrait());
             //用户当前登录机构
@@ -268,7 +306,8 @@ public class LoginController extends BaseController{
 			if(StringUtils.isNotEmpty(returnURL)){
 				request.setAttribute("ReturnURL", returnURL);
 			}
-			return "login/login";
+//			return "login/login";
+			return "yunzhi/login/login";
 		}
 
 	}
@@ -437,6 +476,15 @@ public class LoginController extends BaseController{
 	@RequestMapping(params="goResetPwdMail")
 	public ModelAndView goResetPwdMail(){
 		return new ModelAndView("login/goResetPwdMail");
+	}
+
+	/**
+	 * 跳转至注册界面
+	 * @return
+	 */
+	@RequestMapping(params="register")
+	public ModelAndView register(){
+		return new ModelAndView("yunzhi/login/register");
 	}
 	
 	/**

@@ -17,20 +17,12 @@ import org.jeecgframework.core.common.model.json.DataGrid;
 import org.jeecgframework.core.common.model.json.TreeGrid;
 import org.jeecgframework.core.constant.Globals;
 import org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil;
-import org.jeecgframework.core.util.MutiLangUtil;
-import org.jeecgframework.core.util.MyBeanUtils;
-import org.jeecgframework.core.util.NumberComparator;
-import org.jeecgframework.core.util.StringUtil;
-import org.jeecgframework.core.util.oConvertUtils;
+import org.jeecgframework.core.util.*;
 import org.jeecgframework.tag.core.easyui.TagUtil;
 import org.jeecgframework.tag.vo.datatable.SortDirection;
 import org.jeecgframework.tag.vo.easyui.ComboTreeModel;
 import org.jeecgframework.tag.vo.easyui.TreeGridModel;
-import org.jeecgframework.web.system.pojo.base.TSDataRule;
-import org.jeecgframework.web.system.pojo.base.TSFunction;
-import org.jeecgframework.web.system.pojo.base.TSIcon;
-import org.jeecgframework.web.system.pojo.base.TSOperation;
-import org.jeecgframework.web.system.pojo.base.TSRoleFunction;
+import org.jeecgframework.web.system.pojo.base.*;
 import org.jeecgframework.web.system.service.FunctionService;
 import org.jeecgframework.web.system.service.SystemService;
 import org.jeecgframework.web.system.service.UserService;
@@ -342,6 +334,9 @@ public class FunctionController extends BaseController {
 					TSFunction.class, function.getTSFunction().getId()));
 			req.setAttribute("function", function);
 		}
+		TSUser user = ResourceUtil.getSessionUser();
+		TSRoleUser tsRoleUser = systemService.findUniqueByProperty(TSRoleUser.class, "TSUser.id",user.getId());
+		req.setAttribute("rolecode", tsRoleUser.getTSRole().getRoleCode());
 		return new ModelAndView("system/function/function");
 	}
 	
@@ -393,7 +388,14 @@ public class FunctionController extends BaseController {
 		cq = HqlGenerateUtil.getDataAuthorConditionHql(cq, new TSFunction());
 		cq.add();
 
-		
+		//针对管理员(sysmanager)进行特殊处理
+		TSUser user = ResourceUtil.getSessionUser();
+		TSRoleUser tsRoleUser = systemService.findUniqueByProperty(TSRoleUser.class, "TSUser.id",user.getId());
+		if("sysmanager".equals(tsRoleUser.getTSRole().getRoleCode())) {
+			cq.eq("type", "1");
+			cq.add();
+		}
+
 		List<TSFunction> functionList = systemService.getListByCriteriaQuery(cq, false);
 
         Collections.sort(functionList, new NumberComparator());

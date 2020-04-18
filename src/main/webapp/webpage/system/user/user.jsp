@@ -149,6 +149,13 @@
             </td>
 		</tr>
         <tr>
+            <td align="right"><label class="Validform_label"> 省份: </label></td>
+            <td class="value">
+                <input class="inputxt" name="province" value="${user.province}" errormsg="省份不正确!" />
+                <span class="Validform_checktip"></span>
+            </td>
+        </tr>
+        <tr>
             <td align="right"><label class="Validform_label"> <t:mutiLang langKey="common.common.dev"/>: </label></td>
             <td class="value">
 

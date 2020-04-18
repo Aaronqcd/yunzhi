@@ -43,6 +43,10 @@
 				$('#pfun').hide();
 			}
 		});
+        var rolecode = $("#rolecode").val();
+        if(rolecode == "sysmanager") {
+            $("#tsicon").attr("disabled","disabled");
+        }
 	});
 	
 	function viewStyle(param) {
@@ -53,8 +57,9 @@
 </script>
 </head>
 <body style="overflow-y: hidden" scroll="no">
-<t:formvalid formid="formobj" layout="div" dialog="true" callback="@Override callbackTreeLoad" refresh="true" action="functionController.do?saveFunction">
+<t:formvalid formid="formobj" layout="div" dialog="true" callback="@Override callbackTreeLoad" beforeSubmit="beforeMethod" refresh="true" action="functionController.do?saveFunction">
 	<input id="id" name="id" type="hidden" value="${function.id}">
+    <input id="rolecode" type="hidden" value="${rolecode}">
 	<fieldset class="step">
 	<div class="form">
         <label class="Validform_label"> <t:mutiLang langKey="menu.name"/>: </label>
@@ -99,7 +104,7 @@
     </div>
     <div class="form" id="icon">
         <label class="Validform_label"> <t:mutiLang langKey="common.icon"/>: </label>
-        <select name="TSIcon.id">
+        <select name="TSIcon.id" id="tsicon">
             <c:forEach items="${iconlist}" var="icon">
                 <option value="${icon.id}" <c:if test="${icon.id==function.TSIcon.id || (function.id eq null && icon.iconClas eq 'default') }">selected="selected"</c:if>>
                     <t:mutiLang langKey="${icon.iconName}"/>
@@ -129,6 +134,9 @@
 	</fieldset>
 </t:formvalid> 
 <script type="text/javascript">
+    function beforeMethod() {
+        $("#tsicon").removeAttr("disabled");
+    }
 
 function callbackTreeLoad(data){
 		var win = frameElement.api.opener;

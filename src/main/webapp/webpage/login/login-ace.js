@@ -73,6 +73,7 @@ function reloadRandCodeImage() {
   function optErrMsg(){
 		$("#showErrMsg").html('');
 		$("#errMsgContiner").hide();
+      $("#btn-div").css("margin-top", "30px");
 	}
   
 //登录处理函数
@@ -153,17 +154,18 @@ function reloadRandCodeImage() {
           }
        } else {
 			showErrorMsg(d.msg);
-		  	if(d.msg === "用户名或密码错误" || d.msg === "验证码错误")
-		  		reloadRandCodeImage();
+		  	/*if(d.msg === "用户名或密码错误" || d.msg === "验证码错误")
+		  		reloadRandCodeImage();*/
         }
       }
     });
   }
   //登录提示消息显示
-  function showErrorMsg(msg){	
+  function showErrorMsg(msg){
     $("#errMsgContiner").show();
-    $("#showErrMsg").html(msg);    
-    window.setTimeout(optErrMsg,3000); 
+    $("#showErrMsg").html(msg);
+    $("#btn-div").css("margin-top", 0);
+    window.setTimeout(optErrMsg,3000);
   }
   
   //表单验证

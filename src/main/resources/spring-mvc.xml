@@ -152,12 +152,15 @@
 						<value>loginController.do?goPwdInit</value>
 						<value>loginController.do?pwdInit</value>
 						<value>loginController.do?login</value>
+						<value>loginController.do?register</value>
+						<value>loginController.do?doRegister</value>
 						<value>loginController.do?logout</value>
 						<value>loginController.do?changeDefaultOrg</value>
                         <value>loginController.do?login2</value>
 						<value>loginController.do?login3</value>
 						<value>loginController.do?checkuser</value>
 						<value>loginController.do?checkuser=</value>
+						<value>jeecgFormDemoController.do?regionSelect</value>
 						<value>systemController.do?saveFiles</value>
 						<!-- 邮件密码重置 -->
 						<value>loginController.do?goResetPwd</value>

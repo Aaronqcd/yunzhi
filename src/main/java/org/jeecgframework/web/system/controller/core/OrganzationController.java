@@ -108,6 +108,11 @@ public class OrganzationController extends BaseController {
 	public ModelAndView myDepart() {
 		return new ModelAndView("system/organzation/myDepartList");
 	}
+
+    @RequestMapping(params = "myNewDepart")
+    public ModelAndView myNewDepart() {
+        return new ModelAndView("yunzhi/organzation/myDepartList");
+    }
 	
 	/**
 	 * 部门管理树

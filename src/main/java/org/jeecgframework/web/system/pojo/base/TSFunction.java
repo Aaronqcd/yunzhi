@@ -37,6 +37,7 @@ public class TSFunction extends IdEntity implements java.io.Serializable {
 	private String functionIconStyle;//菜单图标样式
 
 	private TSIcon TSIconDesk;// 云桌面菜单图标
+	private String type;//类型
 
 	/*private int subFunctionSize;
 	@Formula(value = "(SELECT count(t_s_function.id) FROM t_s_function where t_s_function.parentfunctionid = id)")
@@ -276,6 +277,12 @@ public class TSFunction extends IdEntity implements java.io.Serializable {
 		this.functionIconStyle = functionIconStyle;
 	}
 
-	
+	@Column(name = "type")
+	public String getType() {
+		return type;
+	}
 
+	public void setType(String type) {
+		this.type = type;
+	}
 }

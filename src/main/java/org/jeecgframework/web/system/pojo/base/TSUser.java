@@ -1,9 +1,6 @@
 package org.jeecgframework.web.system.pojo.base;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.jeecgframework.poi.excel.annotation.Excel;
 
@@ -49,6 +46,7 @@ public class TSUser extends TSBaseUser implements java.io.Serializable {
 	private java.lang.String updateBy;
 	/**修改人名称*/
 	private java.lang.String updateName;
+	private String province;//省份
 	
 	@Column(name = "dev_flag", length = 2)
 	public String getDevFlag() {
@@ -278,7 +276,16 @@ public class TSUser extends TSBaseUser implements java.io.Serializable {
 	public void setMemo(String memo) {
 		this.memo = memo;
 	}
-	
+
+	@Column(name = "province")
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

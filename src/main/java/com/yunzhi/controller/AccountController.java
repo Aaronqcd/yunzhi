@@ -6,6 +6,7 @@ import org.jeecgframework.core.common.controller.BaseController;
 import org.jeecgframework.core.common.hibernate.qbc.CriteriaQuery;
 import org.jeecgframework.core.common.model.json.DataGrid;
 import org.jeecgframework.core.constant.Globals;
+import org.jeecgframework.core.util.ResourceUtil;
 import org.jeecgframework.tag.core.easyui.TagUtil;
 import org.jeecgframework.web.system.pojo.base.TSRoleUser;
 import org.jeecgframework.web.system.pojo.base.TSUser;
@@ -42,6 +43,15 @@ public class AccountController extends BaseController {
 	public ModelAndView chargeList(HttpServletRequest request) {
 		request.setAttribute("roleId", request.getParameter("roleId"));
 		return new ModelAndView("yunzhi/account/charge/chargeList");
+	}
+
+	/**
+	 * 注册用户信息审核
+	 * @return
+	 */
+	@RequestMapping(params = "goAudit")
+	public ModelAndView goAudit(HttpServletRequest request) {
+		return new ModelAndView("yunzhi/register/userList");
 	}
 
 	/**
@@ -82,6 +92,9 @@ public class AccountController extends BaseController {
 		cq.add(cc);
 		cq.eq("deleteFlag", Globals.Delete_Normal);
 		cq.add();
+		TSUser tsUser = ResourceUtil.getSessionUser();
+		cq.eq("province", tsUser.getProvince());
+		cq.add();
 		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, user);
 		this.systemService.getDataGridReturn(cq, true);
 		List<TSUser> cfeList = new ArrayList<TSUser>();
@@ -89,6 +102,38 @@ public class AccountController extends BaseController {
 			if (o instanceof TSUser) {
 				TSUser cfe = (TSUser) o;
 				if (cfe.getId() != null && !"".equals(cfe.getId())) {
+					if (roleUser.size() > 0) {
+						String roleName = "";
+						for (TSRoleUser ru : roleUser) {
+							roleName += ru.getTSRole().getRoleName() + ",";
+						}
+						roleName = roleName.substring(0, roleName.length() - 1);
+						cfe.setUserKey(roleName);
+					}
+				}
+				cfeList.add(cfe);
+			}
+		}
+		TagUtil.datagrid(response, dataGrid);
+	}
+
+	@RequestMapping(params = "userAuditDatagrid")
+	public void userAuditDatagrid(TSUser user,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(TSUser.class, dataGrid);
+
+		//status=0表示需要审核
+		cq.eq("status", (short)0);
+
+		cq.eq("deleteFlag", Globals.Delete_Normal);
+		cq.add();
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, user);
+		this.systemService.getDataGridReturn(cq, true);
+		List<TSUser> cfeList = new ArrayList<TSUser>();
+		for (Object o : dataGrid.getResults()) {
+			if (o instanceof TSUser) {
+				TSUser cfe = (TSUser) o;
+				if (cfe.getId() != null && !"".equals(cfe.getId())) {
+					List<TSRoleUser> roleUser = systemService.findByProperty(TSRoleUser.class, "TSUser.id", cfe.getId());
 					if (roleUser.size() > 0) {
 						String roleName = "";
 						for (TSRoleUser ru : roleUser) {

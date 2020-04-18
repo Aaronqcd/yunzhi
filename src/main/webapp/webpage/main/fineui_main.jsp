@@ -11,7 +11,7 @@
 	<meta http-equiv="Cache-Control" content="no-siteapp" />
 	<meta name="keywords" content="云智省">
     <meta name="description" content="云智省">
-    <title><t:mutiLang langKey="jeect.platform"/></title>
+    <title>酒店设备续费管理平台</title>
     <link href="plug-in/hplus/css/font-awesome.min.css?v=4.4.0" rel="stylesheet">
 	<link rel="stylesheet" href="plug-in/themes/fineui/common/css/sccl.css">
 	<link rel="stylesheet" type="text/css" href="plug-in/themes/fineui/common/skin/qingxin/skin.css" id="layout-skin"/>
@@ -19,7 +19,7 @@
 	<link rel="stylesheet" href="plug-in/themes/fineui/smart-menu/smartMenu.css">
 	<t:base type="tools,jquery"></t:base>
 	<style>
-	.titlerow{
+	/*.titlerow{
 		display:table; 
 		width: 150px;
 		position: absolute;
@@ -30,6 +30,19 @@
 	    opacity: .50;
 	    filter: alpha(opacity=50);
 	    background-color: rgba(255, 255, 255, 0.20);
+	}*/
+	.titlerow{
+		display:table;
+		width: 100%;
+		position: absolute;
+		top: 50%;
+		margin-top: -13px;
+		text-align: center;
+		font-size: 20px;
+		/*left: 450px;*/
+		margin-bottom: 0;
+		filter: alpha(opacity=50);
+		background-color: rgba(255, 255, 255, 0.20);
 	}
 	.titlecell{
 		width:100%;
@@ -151,7 +164,7 @@
 		border-left-color: #1A3272;
 	}
 	.side-menu {
-		background-color: #1A3272;
+		background-color: #1E4296;
 	}
 	.side-menu .menu-item-child li.active > a, .side-menu .menu-item-child li > a:hover {
 		background: #1A3272;
@@ -162,7 +175,6 @@
 	.layout-header {
 		border-bottom: 1px solid #EFEFEF;
 	}
-		
 		/*.ccrame{
 		 transition:all 1s ease-out 
 		
@@ -184,6 +196,9 @@
 					</div>
 				</div>
 			</div>--%>
+			<div class="titlerow">
+				云智省科技有限公司 - ${rolename}
+			</div>
 			<ul class="header-bar">
 			
 			<%--<li class="header-bar-nav personInfo hiddenty-xs" style="cursor:pointer;">

@@ -60,6 +60,7 @@ import org.jeecgframework.web.system.service.UserService;
 import org.jeecgframework.web.system.util.OrgConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -115,6 +116,11 @@ public class RoleController extends BaseController {
 		return new ModelAndView("system/role/roleList");
 	}
 
+	@RequestMapping(params = "newRole")
+	public ModelAndView newRole() {
+		return new ModelAndView("yunzhi/role/roleList");
+	}
+
 	/**
 	 * easyuiAJAX请求数据
 	 * 
@@ -130,6 +136,21 @@ public class RoleController extends BaseController {
 		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq,role);
 
 		cq.eq("roleType", OrgConstants.SYSTEM_ROLE_TYPE);//默认只查询系统角色
+
+		cq.add();
+		this.systemService.getDataGridReturn(cq, true);
+		TagUtil.datagrid(response, dataGrid);
+		;
+	}
+
+	@RequestMapping(params = "newRoleGrid")
+	public void newRoleGrid(TSRole role, HttpServletRequest request,
+						 HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(TSRole.class, dataGrid);
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq,role);
+
+		cq.eq("roleType", OrgConstants.SYSTEM_ROLE_TYPE);//默认只查询系统角色
+		cq.eq("type", "1");
 
 		cq.add();
 		this.systemService.getDataGridReturn(cq, true);
@@ -153,6 +174,33 @@ public class RoleController extends BaseController {
 			}
 		} catch (Exception e) {
 			LogUtil.log("删除用户对应的角色关系失败", e.getMessage());
+			ajaxJson.setSuccess(false);
+			ajaxJson.setMsg(e.getMessage());
+		}
+		return ajaxJson;
+	}
+
+	@RequestMapping(params = "forceDelUserRole")
+	@ResponseBody
+	@Transactional
+	public AjaxJson forceDelUserRole(@RequestParam(required=true)String userid,@RequestParam(required=true)String roleid) {
+		AjaxJson ajaxJson = new AjaxJson();
+		try {
+			/*List<TSRoleUser> roleUserList = this.systemService.findByProperty(TSRoleUser.class, "TSUser.id", userid);
+			if(roleUserList.size() == 1){
+				ajaxJson.setSuccess(false);
+				ajaxJson.setMsg("不可删除用户的角色关系，请使用修订用户角色关系");
+			}else{*/
+			String sql = "delete from t_s_role_user where userid = ?";
+			this.systemService.executeSql(sql, userid);
+			sql = "delete from t_s_user where id = ?";
+			this.systemService.executeSql(sql, userid);
+			sql = "delete from t_s_base_user where id = ?";
+			this.systemService.executeSql(sql, userid);
+			ajaxJson.setMsg("成功删除用户");
+//			}
+		} catch (Exception e) {
+			LogUtil.log("删除用户失败", e.getMessage());
 			ajaxJson.setSuccess(false);
 			ajaxJson.setMsg(e.getMessage());
 		}
@@ -295,6 +343,13 @@ public class RoleController extends BaseController {
 		return new ModelAndView("system/role/roleSet");
 	}
 
+	@RequestMapping(params = "newFun")
+	public ModelAndView newFun(HttpServletRequest request) {
+		String roleId = request.getParameter("roleId");
+		request.setAttribute("roleId", roleId);
+		return new ModelAndView("yunzhi/role/roleSet");
+	}
+
 	/**
 
 	 * 角色所有用户信息列表页面跳转
@@ -307,6 +362,12 @@ public class RoleController extends BaseController {
 		request.setAttribute("roleId", request.getParameter("roleId"));
 
 		return new ModelAndView("system/role/roleUserList");
+	}
+
+	@RequestMapping(params = "newUserList")
+	public ModelAndView newUserList(HttpServletRequest request) {
+		request.setAttribute("roleId", request.getParameter("roleId"));
+		return new ModelAndView("yunzhi/role/roleUserList");
 	}
 	
 	/**
@@ -512,6 +573,52 @@ public class RoleController extends BaseController {
 		loginActionlist = null;
 
 		//System.out.println(JSON.toJSONString(comboTrees,true));		
+		return comboTrees;
+	}
+
+	@RequestMapping(params = "newSetAuthority")
+	@ResponseBody
+	public List<ComboTree> newSetAuthority(TSRole role,
+										HttpServletRequest request, ComboTree comboTree) {
+		CriteriaQuery cq = new CriteriaQuery(TSFunction.class);
+		if (comboTree.getId() != null) {
+			cq.eq("TSFunction.id", comboTree.getId());
+		}
+		if (comboTree.getId() == null) {
+			cq.isNull("TSFunction");
+		}
+		cq.notEq("functionLevel", Short.parseShort("-1"));
+		cq.eq("type", "1");
+		cq.add();
+		List<TSFunction> functionList = systemService.getListByCriteriaQuery(
+				cq, false);
+		Collections.sort(functionList, new NumberComparator());
+		List<ComboTree> comboTrees = new ArrayList<ComboTree>();
+		String roleId = request.getParameter("roleId");
+		List<TSFunction> loginActionlist = new ArrayList<TSFunction>();// 已有权限菜单
+		role = this.systemService.get(TSRole.class, roleId);
+		if (role != null) {
+			List<TSRoleFunction> roleFunctionList = systemService.findByProperty(TSRoleFunction.class, "TSRole.id",role.getId());
+			if (roleFunctionList.size() > 0) {
+				for (TSRoleFunction roleFunction : roleFunctionList) {
+					TSFunction function = (TSFunction) roleFunction.getTSFunction();
+					loginActionlist.add(function);
+				}
+			}
+			roleFunctionList.clear();
+		}
+		ComboTreeModel comboTreeModel = new ComboTreeModel("id","functionName", "TSFunctions");
+
+		comboTrees = comboTree(functionList, comboTreeModel,loginActionlist, true);
+		MutiLangUtil.setMutiComboTree(comboTrees);
+
+
+		functionList.clear();
+		functionList = null;
+		loginActionlist.clear();
+		loginActionlist = null;
+
+		//System.out.println(JSON.toJSONString(comboTrees,true));
 		return comboTrees;
 	}
 

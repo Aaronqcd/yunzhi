@@ -168,6 +168,15 @@ public class UserController extends BaseController {
 		return "system/user/userList";
 	}
 
+    @RequestMapping(params = "newUser")
+    public String newUser(HttpServletRequest request) {
+        // 给部门查询条件中的下拉框准备数据
+        List<TSDepart> departList = systemService.getList(TSDepart.class);
+        request.setAttribute("departsReplace", RoletoJson.listToReplaceStr(departList, "departname", "id"));
+        departList.clear();
+        return "yunzhi/user/newUserList";
+    }
+
 	@RequestMapping(params = "interfaceUser")
 	public String interfaceUser(HttpServletRequest request) {
 		// 给部门查询条件中的下拉框准备数据
@@ -561,6 +570,53 @@ public class UserController extends BaseController {
         }
         TagUtil.datagrid(response, dataGrid);
     }
+
+    @RequestMapping(params = "newDatagrid")
+    public void newDatagrid(TSUser user,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+        CriteriaQuery cq = new CriteriaQuery(TSUser.class, dataGrid);
+        //查询条件组装器
+        org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, user);
+
+        Short[] userstate = new Short[]{Globals.User_Normal, Globals.User_ADMIN, Globals.User_Forbidden};
+        cq.in("status", userstate);
+        cq.eq("deleteFlag", Globals.Delete_Normal);
+        cq.eq("userType", Globals.USER_TYPE_SYSTEM);//用户列表不显示接口类型的用户
+        cq.eq("personType", "2");
+
+        String orgIds = request.getParameter("orgIds");
+        List<String> orgIdList = extractIdListByComma(orgIds);
+        // 获取 当前组织机构的用户信息
+        if (!CollectionUtils.isEmpty(orgIdList)) {
+            CriteriaQuery subCq = new CriteriaQuery(TSUserOrg.class);
+            subCq.setProjection(Property.forName("tsUser.id"));
+            subCq.in("tsDepart.id", orgIdList.toArray());
+            subCq.add();
+
+            cq.add(Property.forName("id").in(subCq.getDetachedCriteria()));
+        }
+
+        cq.add();
+        this.systemService.getDataGridReturn(cq, true);
+        List<TSUser> cfeList = new ArrayList<TSUser>();
+        for (Object o : dataGrid.getResults()) {
+            if (o instanceof TSUser) {
+                TSUser cfe = (TSUser) o;
+                if (cfe.getId() != null && !"".equals(cfe.getId())) {
+                    List<TSRoleUser> roleUser = systemService.findByProperty(TSRoleUser.class, "TSUser.id", cfe.getId());
+                    if (roleUser.size() > 0) {
+                        String roleName = "";
+                        for (TSRoleUser ru : roleUser) {
+                            roleName += ru.getTSRole().getRoleName() + ",";
+                        }
+                        roleName = roleName.substring(0, roleName.length() - 1);
+                        cfe.setUserKey(roleName);
+                    }
+                }
+                cfeList.add(cfe);
+            }
+        }
+        TagUtil.datagrid(response, dataGrid);
+    }
 	
 	/**
 	 * 用户删除选择对话框
@@ -718,6 +774,7 @@ public class UserController extends BaseController {
 			users.setRealName(user.getRealName());
 			users.setStatus(Globals.User_Normal);
 			users.setActivitiSync(user.getActivitiSync());
+			users.setProvince(user.getProvince());
 			this.userService.saveOrUpdate(users, orgid.split(","), roleid.split(","));
 			message = "用户: " + users.getUserName() + "更新成功";
 		} else {
@@ -794,6 +851,15 @@ public class UserController extends BaseController {
 		return mv;
 	}
 
+    @RequestMapping(params = "newRoles")
+    public ModelAndView newRoles(HttpServletRequest request) {
+        //--author：zhoujf-----start----date:20150531--------for: 编辑用户，选择角色,弹出的角色列表页面，默认没选中
+        ModelAndView mv = new ModelAndView("yunzhi/user/users");
+        String ids = oConvertUtils.getString(request.getParameter("ids"));
+        mv.addObject("ids", ids);
+        return mv;
+    }
+
 	/**
 	 * 角色显示列表
 	 * 
@@ -812,6 +878,19 @@ public class UserController extends BaseController {
 		this.systemService.getDataGridReturn(cq, true);
 		TagUtil.datagrid(response, dataGrid);
 	}
+
+    @RequestMapping(params = "newDatagridRole")
+    public void newDatagridRole(TSRole tsRole, HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+        CriteriaQuery cq = new CriteriaQuery(TSRole.class, dataGrid);
+        //查询条件组装器
+
+        cq.eq("roleType", "0");//默认只查询系统角色
+        cq.eq("type", "1");
+
+        org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, tsRole);
+        this.systemService.getDataGridReturn(cq, true);
+        TagUtil.datagrid(response, dataGrid);
+    }
 
 	/**
 	 * easyuiAJAX请求数据： 用户选择角色列表
@@ -868,6 +947,77 @@ public class UserController extends BaseController {
 
 
         return new ModelAndView("system/user/user");
+	}
+
+    @RequestMapping(params = "newAddorupdate")
+    public ModelAndView newAddorupdate(TSUser user, HttpServletRequest req) {
+        List<String> orgIdList = new ArrayList<String>();
+        TSDepart tsDepart = new TSDepart();
+        if (StringUtil.isNotEmpty(user.getId())) {
+            user = systemService.getEntity(TSUser.class, user.getId());
+
+            req.setAttribute("user", user);
+            idandname(req, user);
+            getOrgInfos(req, user);
+
+        }else{
+            //组织机构关联用户录入
+            String departid = oConvertUtils.getString(req.getParameter("departid"));
+            if(StringUtils.isNotEmpty(departid)){
+                TSDepart depart = systemService.getEntity(TSDepart.class,departid);
+                if(depart!=null){
+                    req.setAttribute("orgIds", depart.getId()+",");
+                    req.setAttribute("departname", depart.getDepartname()+",");
+                }
+            }
+            //角色管理关联用户录入
+            String roleId = oConvertUtils.getString(req.getParameter("roleId"));
+            if(StringUtils.isNotEmpty(roleId)){
+                TSRole tsRole = systemService.getEntity(TSRole.class,roleId);
+                if(tsRole!=null){
+                    req.setAttribute("id", roleId);
+                    req.setAttribute("roleName", tsRole.getRoleName());
+                }
+            }
+        }
+        req.setAttribute("tsDepart", tsDepart);
+        return new ModelAndView("yunzhi/user/systemUser");
+    }
+
+	@RequestMapping(params = "addorupdatePage")
+	public ModelAndView addorupdatePage(TSUser user, HttpServletRequest req) {
+		List<String> orgIdList = new ArrayList<String>();
+		TSDepart tsDepart = new TSDepart();
+		if (StringUtil.isNotEmpty(user.getId())) {
+			user = systemService.getEntity(TSUser.class, user.getId());
+
+			req.setAttribute("user", user);
+			idandname(req, user);
+			getOrgInfos(req, user);
+
+		}else{
+			//组织机构关联用户录入
+			String departid = oConvertUtils.getString(req.getParameter("departid"));
+			if(StringUtils.isNotEmpty(departid)){
+				TSDepart depart = systemService.getEntity(TSDepart.class,departid);
+				if(depart!=null){
+					req.setAttribute("orgIds", depart.getId()+",");
+					req.setAttribute("departname", depart.getDepartname()+",");
+				}
+			}
+			//角色管理关联用户录入
+			String roleId = oConvertUtils.getString(req.getParameter("roleId"));
+			if(StringUtils.isNotEmpty(roleId)){
+				TSRole tsRole = systemService.getEntity(TSRole.class,roleId);
+				if(tsRole!=null){
+					req.setAttribute("id", roleId);
+					req.setAttribute("roleName", tsRole.getRoleName());
+				}
+			}
+		}
+		req.setAttribute("tsDepart", tsDepart);
+
+		return new ModelAndView("yunzhi/user/user");
 	}
 
 	/**

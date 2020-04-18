@@ -43,6 +43,7 @@ import org.jeecgframework.web.system.enums.InterfaceEnum;
 import org.jeecgframework.web.system.pojo.base.InterfaceRuleDto;
 import org.jeecgframework.web.system.pojo.base.TSDepart;
 import org.jeecgframework.web.system.pojo.base.TSLog;
+import org.jeecgframework.web.system.pojo.base.TSUser;
 import org.jeecgframework.web.system.service.SystemService;
 import org.jeecgframework.web.system.util.InterfaceUtil;
 import org.slf4j.Logger;
@@ -623,7 +624,6 @@ public class JeecgListDemoController extends BaseController {
 	 * @param request
 	 * @param response
 	 * @param dataGrid
-	 * @param user
 	 */
 
 	@RequestMapping(params = "datagrid")
@@ -793,7 +793,6 @@ public class JeecgListDemoController extends BaseController {
 	/**
 	 * 添加jeecg_demo
 	 * 
-	 * @param ids
 	 * @return
 	 */
 	@RequestMapping(params = "doAdd")
@@ -817,7 +816,6 @@ public class JeecgListDemoController extends BaseController {
 	/**
 	 * 更新jeecg_demo
 	 * 
-	 * @param ids
 	 * @return
 	 */
 	@RequestMapping(params = "doUpdate")
@@ -1035,7 +1033,7 @@ public class JeecgListDemoController extends BaseController {
         this.systemService.getDataGridReturn(cq, true);
 		TagUtil.datagrid(response, dataGrid);
 	}
-	
+
 	@RequestMapping(params = "goOnlyData")
 	public ModelAndView goOnlyData(HttpServletRequest req,JeecgLogReport log) {
 		return new ModelAndView("com/jeecg/demo/logrp-onlyData");
