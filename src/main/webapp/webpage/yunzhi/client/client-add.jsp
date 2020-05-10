@@ -22,7 +22,7 @@
 			<label for="hotelInfo" class="col-sm-3 control-label">酒店信息：</label>
 			<div class="col-sm-7">
 				<div class="input-group" style="width:100%">
-					<input id="hotelInfo" name="hotelInfo" type="text" maxlength="100" class="form-control input-sm" placeholder="请输入酒店信息"  ignore="ignore" />
+					<input id="hotelInfo" name="hotelInfo" type="text" maxlength="100" class="form-control input-sm" placeholder="请输入酒店信息" datatype="*" ignore="checked" />
 				</div>
 			</div>
 		</div>
@@ -30,7 +30,7 @@
 			<label for="corpInfo" class="col-sm-3 control-label">法人信息：</label>
 			<div class="col-sm-7">
 				<div class="input-group" style="width:100%">
-					<input id="corpInfo" name="corpInfo" type="text" maxlength="50" class="form-control input-sm" placeholder="请输入法人信息"  ignore="ignore" />
+					<input id="corpInfo" name="corpInfo" type="text" maxlength="50" class="form-control input-sm" placeholder="请输入法人信息" datatype="*" ignore="checked" />
 				</div>
 			</div>
 		</div>
@@ -47,7 +47,7 @@
 			<label for="address" class="col-sm-3 control-label">酒店地址：</label>
 			<div class="col-sm-7">
 				<div class="input-group" style="width:100%">
-					<input id="address" name="address" type="text" maxlength="255" class="form-control input-sm" placeholder="请输入酒店地址"  ignore="ignore" />
+					<input id="address" name="address" type="text" maxlength="255" class="form-control input-sm" placeholder="请输入酒店地址" datatype="*" ignore="checked" />
 				</div>
 			</div>
 		</div>
@@ -63,7 +63,31 @@
 			<label for="contact" class="col-sm-3 control-label">联系方式：</label>
 			<div class="col-sm-7">
 				<div class="input-group" style="width:100%">
-					<input id="contact" name="contact" type="text" maxlength="20" class="form-control input-sm" placeholder="请输入联系方式"  ignore="ignore" />
+					<input id="contact" name="contact" type="text" maxlength="20" class="form-control input-sm" placeholder="请输入联系方式" datatype="*" ignore="checked" />
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="contact" class="col-sm-3 control-label">应收服务费：</label>
+			<div class="col-sm-7">
+				<div class="input-group" style="width:100%">
+					<input id="receivable" name="receivable" type="text" maxlength="20" class="form-control input-sm" placeholder="请输入应收服务费" datatype="d" ignore="checked" />
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="contact" class="col-sm-3 control-label">应收营运保证金：</label>
+			<div class="col-sm-7">
+				<div class="input-group" style="width:100%">
+					<input id="deposit" name="deposit" type="text" maxlength="20" class="form-control input-sm" placeholder="请输入应收营运保证金" datatype="d" ignore="checked" />
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="contact" class="col-sm-3 control-label">唯一标识：</label>
+			<div class="col-sm-7">
+				<div class="input-group" style="width:100%">
+					<input id="postid" name="postid" type="text" maxlength="50" class="form-control input-sm" placeholder="请输入唯一标识" datatype="*" ignore="checked" />
 				</div>
 			</div>
 		</div>
@@ -80,6 +104,23 @@ $(document).ready(function() {
 		checkboxClass : 'icheckbox_square-green',
 		radioClass : 'iradio_square-green',
 		increaseArea : '20%'
+	});
+
+	$("#postid").blur(function() {
+		$.ajax({
+			type: "post",
+			url: "clientController.do?checkPostid",
+			dataType:"json",
+			data: {
+				username: $("#postid").val()
+			},
+			success: function(data){
+				console.log(data);
+				if(!data.success) {
+					showErrorMsg(data.msg);
+				}
+			}
+		});
 	});
 	
 	//表单提交

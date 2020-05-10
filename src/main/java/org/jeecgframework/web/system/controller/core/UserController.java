@@ -1743,4 +1743,24 @@ public class UserController extends BaseController {
 		req.setAttribute("tsDepart", tsDepart);
         return new ModelAndView("system/user/myOrgUser");
 	}
+
+	/**
+	 * 检查用户名是否唯一
+	 * @param username
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(params = "checkUsername")
+	@ResponseBody
+	public AjaxJson checkUsername(String username, HttpServletRequest request) {
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		List<TSUser> users = systemService.findByProperty(TSUser.class, "userName", username);
+		if(users.size() > 0) {
+			message = "账户已存在，请重新输入!";
+			j.setSuccess(false);
+		}
+		j.setMsg(message);
+		return  j;
+	}
 }

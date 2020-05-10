@@ -48,12 +48,15 @@ public class DeductionDetailServiceImpl extends CommonServiceImpl implements Ded
  	}
 
 	@Override
-	public void saveDeductionDetail(String userId, DeductionDetailEntity deductionDetail) throws Exception {
+	public int saveDeductionDetail(String userId, DeductionDetailEntity deductionDetail) throws Exception {
 		//扣费，添加扣费记录并更新账户表的余额
 		Map<String, Object> account = systemService.findOneForJdbc("select id from tb_account where user_id=?", userId);
 		String id = (String) account.get("id");
 		AccountEntity accountEntity = accountService.get(AccountEntity.class, id);
 		Double balance = accountEntity.getBalance() - deductionDetail.getMoney();
+		if(balance < 0) {
+			return 1;//表示余额不足
+		}
 		//设置充值前金额
 		deductionDetail.setBeforeMoney(accountEntity.getBalance());
 		//设置充值后金额
@@ -73,6 +76,7 @@ public class DeductionDetailServiceImpl extends CommonServiceImpl implements Ded
 		deductionDetail.setComment(comment);
 		deductionDetail.setAccount(accountEntity);
 		save(deductionDetail);
-	}
+		return 0;//表示扣费正常
+ 	}
 
 }

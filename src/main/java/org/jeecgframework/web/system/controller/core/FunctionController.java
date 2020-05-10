@@ -217,6 +217,10 @@ public class FunctionController extends BaseController {
 		AjaxJson j = new AjaxJson();
 		function.setFunctionUrl(function.getFunctionUrl().trim());
 		String functionOrder = function.getFunctionOrder();
+		String type = function.getType();
+		if (StringUtils.isEmpty(type)) {
+			function.setType("1");
+		}
 		if (StringUtils.isEmpty(functionOrder)) {
 			function.setFunctionOrder("0");
 		}

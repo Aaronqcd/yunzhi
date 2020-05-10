@@ -66,6 +66,30 @@
 			</div>
 		</div>
 	</div>
+	<div class="form-group">
+		<label for="contact" class="col-sm-3 control-label">应收服务费：</label>
+		<div class="col-sm-7">
+			<div class="input-group" style="width:100%">
+				<input id="receivable" name="receivable" value='${client.receivable}' type="text" maxlength="20" class="form-control input-sm" placeholder="请输入应收服务费" datatype="d" ignore="checked" />
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="contact" class="col-sm-3 control-label">应收营运保证金：</label>
+		<div class="col-sm-7">
+			<div class="input-group" style="width:100%">
+				<input id="deposit" name="deposit" value='${client.deposit}' type="text" maxlength="20" class="form-control input-sm" placeholder="请输入应收营运保证金" datatype="d" ignore="checked" />
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="contact" class="col-sm-3 control-label">唯一标识：</label>
+		<div class="col-sm-7">
+			<div class="input-group" style="width:100%">
+				<input id="postid" name="postid" value='${client.postid}' type="text" maxlength="50" class="form-control input-sm" placeholder="请输入唯一标识" datatype="*" ignore="checked" />
+			</div>
+		</div>
+	</div>
 	</form>
 	</div>
  </div>
@@ -79,6 +103,23 @@ $(document).ready(function() {
 		checkboxClass : 'icheckbox_square-green',
 		radioClass : 'iradio_square-green',
 		increaseArea : '20%'
+	});
+
+	$("#postid").blur(function() {
+		$.ajax({
+			type: "post",
+			url: "clientController.do?checkPostid",
+			dataType:"json",
+			data: {
+				username: $("#postid").val()
+			},
+			success: function(data){
+				console.log(data);
+				if(!data.success) {
+					showErrorMsg(data.msg);
+				}
+			}
+		});
 	});
 	
 	//表单提交

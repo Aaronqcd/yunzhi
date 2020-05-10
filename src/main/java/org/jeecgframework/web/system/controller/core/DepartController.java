@@ -241,6 +241,7 @@ public class DepartController extends BaseController {
 	public ModelAndView add(TSDepart depart, HttpServletRequest req) {
 		List<TSDepart> departList = systemService.getList(TSDepart.class);
 		req.setAttribute("departList", departList);
+		TSDepart tsDepart = systemService.getEntity(TSDepart.class, depart.getId());
 //        这个if代码段没有用吧，注释之
 //		if (StringUtil.isNotEmpty(depart.getId())) {
 //			TSDepart tspDepart = new TSDepart();
@@ -252,6 +253,11 @@ public class DepartController extends BaseController {
 //			req.setAttribute("depart", tsDepart);
 //		}
         req.setAttribute("pid", depart.getId());
+        int tier = 0;
+        if(tsDepart != null) {
+			tier = tsDepart.getTier();
+		}
+		req.setAttribute("tier", tier);
 		return new ModelAndView("system/depart/depart");
 	}
 	/**

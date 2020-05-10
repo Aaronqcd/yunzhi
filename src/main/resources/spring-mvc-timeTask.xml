@@ -23,5 +23,4 @@
 	</bean>	
 	<!-- 定时任务业务类  配置loadTask随系统启动，以加载初始启动的定时任务 -->
 	<bean id="dynamicTask" class="org.jeecgframework.core.timer.DynamicTask" init-method="loadTask"/>
-	
 </beans>

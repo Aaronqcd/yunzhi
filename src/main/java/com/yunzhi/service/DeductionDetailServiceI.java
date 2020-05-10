@@ -12,6 +12,6 @@ public interface DeductionDetailServiceI extends CommonService{
  	
  	public void saveOrUpdate(DeductionDetailEntity entity) throws Exception;
 
-	public void saveDeductionDetail(String userId, DeductionDetailEntity rechargeRecord) throws Exception;
+	public int saveDeductionDetail(String userId, DeductionDetailEntity rechargeRecord) throws Exception;
  	
 }

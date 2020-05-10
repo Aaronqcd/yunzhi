@@ -168,6 +168,8 @@
 						<value>loginController.do?goResetPwdMail</value>
 						<value>loginController.do?sendResetPwdMail</value>
 						<value>userController.do?userOrgSelect</value>
+						<value>userController.do?checkUsername</value>
+						<value>accountController.do?message</value>
 						<!--移动图表-->
 						<value>cgDynamGraphController.do?design</value>
 						<value>cgDynamGraphController.do?datagrid</value>

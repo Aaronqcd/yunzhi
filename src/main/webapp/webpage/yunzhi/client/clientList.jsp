@@ -281,12 +281,21 @@
 												title : "操作",
 												align : 'center',
 												valign : 'middle',
-												width : 100,
+												width : 200,
 												formatter : function(value,row, index) {
 													if (!row.id) {
 														return '';
 													}
 													var href = '';
+													href += "<a href='javascript:void(0);'  class='ace_button'  onclick=addOneTab('查看"+row.hotelInfo+"余额','ledgerController.do?newList&clientId="
+															+ row.id + "')> ";
+													href += "查看余额</a>&nbsp;";
+													href += "<a href='javascript:void(0);'  class='ace_button'  onclick=addOneTab('查看"+row.hotelInfo+"扣费明细','deductionDetailController.do?newList&clientId="
+															+ row.id + "')> ";
+													href += "查看扣费明细</a>&nbsp;";
+                                                    href += "<a href='javascript:void(0);'  class='ace_button'  onclick=addOneTab('查看"+row.hotelInfo+"充值明细','rechargeRecordController.do?newList&clientId="
+                                                        + row.id + "')> ";
+                                                    href += "查看充值明细</a>&nbsp;";
 													/*href += "<a href='javascript:void(0);'  class='ace_button'  onclick=delObj('clientController.do?doDel&id="
 															+ row.id
 															+ "','testRulesList')>  <i class='fa fa-trash-o' aria-hidden='true'></i> ";

@@ -98,21 +98,72 @@ public class DeductionDetailController extends BaseController {
 	}
 
 	/**
+	 * 客户列表 查看扣费明细
+	 * @param clientId
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(params = "newList")
+	public ModelAndView newList(String clientId, HttpServletRequest request) {
+		request.setAttribute("clientId", clientId);
+		return new ModelAndView("yunzhi/deduction/newList");
+	}
+
+	/**
 	 * easyui AJAX请求数据
 	 * 
 	 * @param request
 	 * @param response
 	 * @param dataGrid
 	 */
-
 	@RequestMapping(params = "datagrid")
 	public void datagrid(DeductionDetailEntity deductionDetail,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
 		CriteriaQuery cq = new CriteriaQuery(DeductionDetailEntity.class, dataGrid);
 		//查询条件组装器
 		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, deductionDetail, request.getParameterMap());
+		TSUser tsUser = ResourceUtil.getSessionUser();
 		try{
-		//自定义追加查询条件
-		
+			//自定义追加查询条件
+			if(tsUser != null) {
+				String sql = "select id from tb_account where user_id=?";
+				Map<String, Object> map = systemService.findOneForJdbc(sql, tsUser.getId());
+				if(map != null) {
+					cq.eq("account.id", map.get("id"));
+				}
+			}
+		}catch (Exception e) {
+			throw new BusinessException(e.getMessage());
+		}
+		cq.add();
+		this.deductionDetailService.getDataGridReturn(cq, true);
+		List<DeductionDetailEntity> deductionRecords = dataGrid.getResults();
+		Map<String,Map<String,Object>> extMap = new HashMap<String, Map<String,Object>>();
+		for(DeductionDetailEntity temp : deductionRecords){
+			//此为针对原来的行数据，拓展的新字段
+			Map m = new HashMap();
+			m.put("hotelInfo", temp.getAccount().getHotelInfo());
+			extMap.put(temp.getId(), m);
+		}
+		TagUtil.datagrid(response, dataGrid, extMap);
+	}
+
+	@RequestMapping(params = "newDatagrid")
+	public void newDatagrid(DeductionDetailEntity deductionDetail,String clientId, HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(DeductionDetailEntity.class, dataGrid);
+		//查询条件组装器
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, deductionDetail, request.getParameterMap());
+		try{
+			//自定义追加查询条件
+			if(clientId != null) {
+				String sql = "select id from tb_account where client_id=?";
+				Map<String, Object> map = systemService.findOneForJdbc(sql, clientId);
+				if(map != null) {
+					cq.eq("account.id", map.get("id"));
+				}
+				else {
+					cq.eq("account.id", map.get("@1"));
+				}
+			}
 		}catch (Exception e) {
 			throw new BusinessException(e.getMessage());
 		}
@@ -196,8 +247,11 @@ public class DeductionDetailController extends BaseController {
 		TSUser user = ResourceUtil.getSessionUser();
 		try{
 			deductionDetail.setStatus("0");
-			deductionDetailService.saveDeductionDetail(user.getId(), deductionDetail);
+			int flag = deductionDetailService.saveDeductionDetail(user.getId(), deductionDetail);
 			systemService.addLog(message, Globals.Log_Type_INSERT, Globals.Log_Leavel_INFO);
+			if(flag == 1) {
+				message = "账户余额不足";
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 			message = "扣费明细表添加失败";
@@ -258,6 +312,15 @@ public class DeductionDetailController extends BaseController {
 			req.setAttribute("deductionDetail", deductionDetail);
 		}
 		return new ModelAndView("yunzhi/deduction/deductionDetail-update");
+	}
+
+	@RequestMapping(params = "goDetail")
+	public ModelAndView goDetail(DeductionDetailEntity deductionDetail, HttpServletRequest req) {
+		if (StringUtil.isNotEmpty(deductionDetail.getId())) {
+			deductionDetail = deductionDetailService.getEntity(DeductionDetailEntity.class, deductionDetail.getId());
+			req.setAttribute("deductionDetail", deductionDetail);
+		}
+		return new ModelAndView("yunzhi/deduction/deductionDetail-detail");
 	}
 	
 	/**

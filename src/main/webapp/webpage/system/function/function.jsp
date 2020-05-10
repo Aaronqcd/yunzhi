@@ -59,6 +59,7 @@
 <body style="overflow-y: hidden" scroll="no">
 <t:formvalid formid="formobj" layout="div" dialog="true" callback="@Override callbackTreeLoad" beforeSubmit="beforeMethod" refresh="true" action="functionController.do?saveFunction">
 	<input id="id" name="id" type="hidden" value="${function.id}">
+    <input id="type" name="type" type="hidden" value="${function.type}">
     <input id="rolecode" type="hidden" value="${rolecode}">
 	<fieldset class="step">
 	<div class="form">

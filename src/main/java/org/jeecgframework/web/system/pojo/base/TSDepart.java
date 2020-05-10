@@ -56,6 +56,7 @@ public class TSDepart extends IdEntity implements java.io.Serializable {
 	private java.lang.String sysOrgCode;
 	/**所属公司*/
 	private java.lang.String sysCompanyCode;
+	private Integer tier;
 	
 	private List<TSDepart> TSDeparts = new ArrayList<TSDepart>();//下属部门
 
@@ -288,7 +289,13 @@ public class TSDepart extends IdEntity implements java.io.Serializable {
 	public void setDepartOrder(String departOrder) {
 		this.departOrder = departOrder;
 	}
-	
-	
-	
+
+	@Column(name="tier")
+	public Integer getTier() {
+		return tier;
+	}
+
+	public void setTier(Integer tier) {
+		this.tier = tier;
+	}
 }

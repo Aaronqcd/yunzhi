@@ -49,7 +49,7 @@
 			<button onclick="add('录入','deductionDetailController.do?goAdd','deductionDetailList',600,400)" id="btn_add" class="btn btn-primary btn-sm">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 扣费
 			</button>
-			<button onclick="detail('查看','deductionDetailController.do?goUpdate','deductionDetailList',600,400)" class="btn btn-info btn-sm">
+			<button onclick="detail('查看','deductionDetailController.do?goDetail','deductionDetailList',600,400)" class="btn btn-info btn-sm">
 				<span class="glyphicon glyphicon-search" aria-hidden="true"></span> 查看
 			</button>
 			<a class="btn btn-default btn-sm" data-toggle="collapse" href="#collapse_search" id="btn_collapse_search"> <span class="glyphicon glyphicon-search" aria-hidden="true"></span> 检索 </a>
@@ -236,7 +236,7 @@
 											},
 											{
 												field : 'beforeMoney',
-												title : '充值前金额',
+												title : '扣费前金额',
 												valign : 'middle',
 												width : 120,
 												align : 'center',
@@ -244,7 +244,7 @@
 											},
 											{
 												field : 'afterMoney',
-												title : '充值后金额',
+												title : '扣费后金额',
 												valign : 'middle',
 												width : 120,
 												align : 'center',

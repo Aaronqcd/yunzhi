@@ -98,6 +98,17 @@ public class LedgerController extends BaseController {
 	}
 
 	/**
+	 * 客户列表 查看余额
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(params = "newList")
+	public ModelAndView newList(String clientId, HttpServletRequest request) {
+		request.setAttribute("clientId", clientId);
+		return new ModelAndView("yunzhi/ledger/newList");
+	}
+
+	/**
 	 * easyui AJAX请求数据
 	 * 
 	 * @param request
@@ -115,6 +126,25 @@ public class LedgerController extends BaseController {
 		try{
 		//自定义追加查询条件
 			cq.eq("user.id", user.getId());
+		}catch (Exception e) {
+			throw new BusinessException(e.getMessage());
+		}
+		cq.add();
+		this.accountService.getDataGridReturn(cq, true);
+		TagUtil.datagrid(response, dataGrid);
+	}
+
+	@RequestMapping(params = "newDatagrid")
+	public void newDatagrid(AccountEntity account,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(AccountEntity.class, dataGrid);
+//		TSUser user = ResourceUtil.getSessionUser();
+		//查询条件组装器
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, account, request.getParameterMap());
+		try{
+			//自定义追加查询条件
+			if(account.getClient() != null) {
+				cq.eq("client.id", account.getClient().getId());
+			}
 		}catch (Exception e) {
 			throw new BusinessException(e.getMessage());
 		}

@@ -62,6 +62,17 @@ public class ClientEntity implements java.io.Serializable {
 	/**联系方式*/
 	@Excel(name="联系方式",width=15)
 	private String contact;
+	/**应收服务费*/
+	@Excel(name="应收服务费",width=15)
+	private Double receivable;
+	/**应收营运保证金*/
+	@Excel(name="应收营运保证金",width=15)
+	private Double deposit;
+	/**回款金额*/
+	@Excel(name="回款金额",width=15)
+	private Double amount;
+	private String ipAddress;
+	private String postid;
 	
 	/**
 	 *方法: 取得java.lang.String
@@ -286,5 +297,50 @@ public class ClientEntity implements java.io.Serializable {
 	 */
 	public void setContact(String contact){
 		this.contact = contact;
+	}
+
+	@Column(name ="receivable",nullable=true)
+	public Double getReceivable() {
+		return receivable;
+	}
+
+	public void setReceivable(Double receivable) {
+		this.receivable = receivable;
+	}
+
+	@Column(name ="deposit",nullable=true)
+	public Double getDeposit() {
+		return deposit;
+	}
+
+	public void setDeposit(Double deposit) {
+		this.deposit = deposit;
+	}
+
+	@Column(name ="amount",nullable=true)
+	public Double getAmount() {
+		return amount;
+	}
+
+	public void setAmount(Double amount) {
+		this.amount = amount;
+	}
+
+	@Column(name ="ip_address",nullable=true)
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	@Column(name ="postid",nullable=true)
+	public String getPostid() {
+		return postid;
+	}
+
+	public void setPostid(String postid) {
+		this.postid = postid;
 	}
 }

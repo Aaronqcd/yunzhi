@@ -54,7 +54,7 @@
       color: #fff;
     }
     .btn-text {
-      font-size: 25px;
+      font-size: 16px;
       color: #fff;
     }
     .right-text {
@@ -94,7 +94,7 @@
       width:400px;
       height:40px;
       margin-left: 90px;
-      background:url(plug-in/login/images/password.png) no-repeat 10px center;
+      background:url(plug-in/login/images/phone.png) no-repeat 10px center;
     }
     .username-text input,
     .password-text input,
@@ -131,21 +131,27 @@
     .btn-style {
       float:right;
       margin-right:50px;
-      height:60px;
+      height:30px;
       border:none;
       /*width: 50% !important;*/
     }
     .err-style {
       display:none;
       height:30px;
-      margin-top:460px;
+      margin-top:530px;
       line-height:30px;
       padding:0;
       width:200px;
       margin-left:200px;
     }
+    .width-35 {
+      width: 15% !important;
+    }
     input[type=checkbox].ace + .lbl::before, input[type=radio].ace + .lbl::before {
       margin-right: 5px;
+    }
+    .alert {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -162,7 +168,7 @@
               </div>
             </div>
             <div class="col-md-6">
-              <div class="col-md-12" style="margin-top: 40px;">
+              <div class="col-md-12" style="margin-top: 25px;">
                 <span class="right-text">欢迎注册</span>
               </div>
               <form id="registerForm" class="form-horizontal" method="post" style="height: 360px;">
@@ -171,7 +177,23 @@
                 <input type="hidden" name="status" id="status" value="0" />
                 <div class="widget-main">
                   <div class="col-md-12">
-                    <div class="col-md-12" style="margin-top: 30px;">
+                    <div class="col-md-12" style="margin-top: 10px;">
+                      <span class="login-text">邀请码</span>
+                    </div>
+                    <div class="col-md-12 username-text">
+                      <input class="login-box-text" type="text" name="inviteCode" placeholder="请输入邀请码" id="inviteCode" datatype="*"/>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="col-md-12" style="margin-top: 10px;">
+                      <span class="login-text">真实姓名</span>
+                    </div>
+                    <div class="col-md-12 username-text">
+                      <input class="login-box-text" type="text" name="realName" placeholder="请输入真实姓名" id="realName" datatype="*"/>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="col-md-12" style="margin-top: 10px;">
                       <span class="login-text">账户</span>
                     </div>
                     <div class="col-md-12 username-text">
@@ -179,7 +201,7 @@
                     </div>
                   </div>
                   <div class="col-md-12">
-                    <div class="col-md-12" style="margin-top: 20px;">
+                    <div class="col-md-12" style="margin-top: 10px;">
                       <span class="login-text">密码</span>
                     </div>
                     <div class="col-md-12 password-text">
@@ -187,7 +209,7 @@
                     </div>
                   </div>
                   <div class="col-md-12">
-                    <div class="col-md-12" style="margin-top: 20px;">
+                    <div class="col-md-12" style="margin-top: 10px;">
                       <span class="login-text">确认密码</span>
                     </div>
                     <div class="col-md-12 password-text">
@@ -195,14 +217,14 @@
                     </div>
                   </div>
                   <div class="col-md-12">
-                    <div class="col-md-12" style="margin-top: 20px;">
+                    <div class="col-md-12" style="margin-top: 10px;">
                       <span class="login-text">手机号</span>
                     </div>
                     <div class="col-md-12 mobile-text">
                       <input class="login-box-text" type="text" name="mobilePhone" placeholder="请输入手机号" id="mobilePhone" datatype="*"/>
                     </div>
                   </div>
-                  <div class="col-md-12" style="margin-top: 20px;">
+                  <div class="col-md-12" style="margin-top: 10px;">
                     <div class="col-md-6" style="padding-left: 80px;">
                       <select name="role" id="role">
                         <option value="" disabled selected hidden>注册身份</option>
@@ -219,9 +241,9 @@
                   </div>
                   <div class="alert alert-warning alert-dismissible err-style" role="alert" id="errMsgContiner">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <div id="showErrMsg" style="height: 30px;"></div>
+                    <div id="showErrMsg" style="height: 10px;"></div>
                   </div>
-                  <div class="col-md-12" id="btn-div" style="margin-top: 30px;">
+                  <div class="col-md-12" id="btn-div" style="margin-top: 10px;">
                     <button type="button" id="but_login"  onclick="checkUser()" class="width-35 btn btn-sm btn-primary btn-style">
                       <span class="btn-text">确定</span>
                     </button>
@@ -269,12 +291,51 @@
           showErrorMsg("两次密码不匹配");
           return false;
         }
-        debugger;
+      });
+      $("#inviteCode").blur(function() {
+        $.ajax({
+          type: "post",
+          url: "inviteCodeController.do?validateCode",
+          dataType:"json",
+          data: {
+            code: $("#inviteCode").val()
+          },
+          success: function(data){
+            console.log(data);
+            if(!data.success) {
+              showErrorMsg(data.msg);
+            }
+          }
+        });
+      });
+      $("#userName").blur(function() {
+        $.ajax({
+          type: "post",
+          url: "userController.do?checkUsername",
+          dataType:"json",
+          data: {
+            username: $("#userName").val()
+          },
+          success: function(data){
+            console.log(data);
+            if(!data.success) {
+              showErrorMsg(data.msg);
+            }
+          }
+        });
       });
     });
 	$("#errMsgContiner").hide();
     //表单验证
     function validRegisterForm(){
+      if($.trim($("#inviteCode").val()).length==0){
+        showErrorMsg("请输入邀请码");
+        return false;
+      }
+      if($.trim($("#realName").val()).length==0){
+        showErrorMsg("请输入真实姓名");
+        return false;
+      }
       if($.trim($("#userName").val()).length==0){
         showErrorMsg("请输入用户名");
         return false;
@@ -340,68 +401,14 @@
       error : function() {// 请求失败处理函数
       },
       success : function(data) {
-        alert("注册资料提交成功，待审核通过后可进行登录操作！");
         var d = $.parseJSON(data);
         if (d.success) {
+          alert("注册资料提交成功，待审核通过后可进行登录操作！");
           window.location.href = loginurl;
         }
-        /*var d = $.parseJSON(data);
-        if (d.success) {
-          if (d.attributes.orgNum > 1) {
-            //用户拥有多个部门，需选择部门进行登录
-            var title, okButton;
-            if($("#langCode").val() == 'en') {
-              title = "Please select Org";
-              okButton = "Ok";
-            } else {
-              title = "请选择组织机构";
-              okButton = "确定";
-            }
-            $.dialog({
-              id: 'LHG1976D',
-              title: title,
-              max: false,
-              min: false,
-              drag: false,
-              resize: false,
-              content: 'url:userController.do?userOrgSelect&userId=' + d.attributes.user.id,
-              lock:true,
-              button : [ {
-                name : okButton,
-                focus : true,
-                callback : function() {
-                  iframe = this.iframe.contentWindow;
-                  var orgId = $('#orgId', iframe.document).val();
-                  //----------------------------------------------------
-                  //变更采用ajax方式提高效率
-                  formData['orgId'] = orgId ? orgId : "";
-                  $.ajax({
-                    async : false,
-                    cache : false,
-                    type : 'POST',
-                    url : 'loginController.do?changeDefaultOrg',// 请求的action路径
-                    data : formData,
-                    error : function() {// 请求失败处理函数
-                    },
-                    success : function(data) {
-                      window.location.href = actionurl;
-                    }
-                  });
-                  //----------------------------------------------------
-                  this.close();
-                  return false;
-                }
-              }],
-              close: function(){
-                setTimeout("window.location.href='"+actionurl+"'", 10);
-              }
-            });
-          } else {
-            window.location.href = actionurl;
-          }
-        } else {
-          showErrorMsg(d.msg);
-        }*/
+        else {
+          alert(d.msg);
+        }
       }
     });
   }

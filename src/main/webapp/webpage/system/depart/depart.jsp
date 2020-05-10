@@ -16,7 +16,7 @@
 
             }
         });
-		
+		debugger;
 		var parentId = $('#cc').val();
         if(!parentId) { // 第一级，只显示公司选择项
             var orgTypeSelect = $("#orgType");
@@ -30,8 +30,10 @@
         if($("#id").val()) {
             $('#cc').combotree('disable');
         }
+        $('#tier').val('1');
         if('${empty pid}' == 'false') { // 设置新增页面时的父级
             $('#cc').combotree('setValue', '${pid}');
+            $('#tier').val('${tier+1}');
         }
 	});
 
@@ -55,6 +57,7 @@
 <body style="overflow-y: hidden" scroll="no">
 <t:formvalid formid="formobj" layout="div" dialog="true" callback="@Override callbackTreeLoad" action="systemController.do?saveDepart">
 	<input id="id" name="id" type="hidden" value="${depart.id }">
+    <input id="level" name="tier" type="hidden" value="${depart.tier }">
 	<fieldset class="step">
         <div class="form">
             <label class="Validform_label"> <t:mutiLang langKey="common.department.name"/>: </label>
@@ -67,6 +70,7 @@
         </div>
         <div class="form">
             <label class="Validform_label"> <t:mutiLang langKey="parent.depart"/>: </label>
+
             <input id="cc" name="TSPDepart.id" value="${depart.TSPDepart.id}">
         </div>
         <div class="form">

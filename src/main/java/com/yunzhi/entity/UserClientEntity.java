@@ -6,17 +6,13 @@ import java.lang.String;
 import java.lang.Double;
 import java.lang.Integer;
 import java.math.BigDecimal;
+import javax.persistence.*;
 import javax.xml.soap.Text;
 import java.sql.Blob;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
-import javax.persistence.SequenceGenerator;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.jeecgframework.web.system.pojo.base.TSUser;
 
 /**   
  * @Title: Entity
@@ -34,10 +30,10 @@ public class UserClientEntity implements java.io.Serializable {
 	private String id;
 	/**员工id*/
 	@Excel(name="员工id",width=15)
-	private String userId;
+	private TSUser user;
 	/**客户id*/
 	@Excel(name="客户id",width=15)
-	private String clientId;
+	private ClientEntity client;
 	/**类型*/
 	@Excel(name="类型",width=15)
 	private String type;
@@ -62,40 +58,27 @@ public class UserClientEntity implements java.io.Serializable {
 	public void setId(String id){
 		this.id = id;
 	}
-	/**
-	 *方法: 取得java.lang.String
-	 *@return: java.lang.String  员工id
-	 */
 
-	@Column(name ="USER_ID",nullable=true,length=36)
-	public String getUserId(){
-		return this.userId;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "USER_ID")
+	public TSUser getUser() {
+		return user;
 	}
 
-	/**
-	 *方法: 设置java.lang.String
-	 *@param: java.lang.String  员工id
-	 */
-	public void setUserId(String userId){
-		this.userId = userId;
-	}
-	/**
-	 *方法: 取得java.lang.String
-	 *@return: java.lang.String  客户id
-	 */
-
-	@Column(name ="CLIENT_ID",nullable=true,length=36)
-	public String getClientId(){
-		return this.clientId;
+	public void setUser(TSUser user) {
+		this.user = user;
 	}
 
-	/**
-	 *方法: 设置java.lang.String
-	 *@param: java.lang.String  客户id
-	 */
-	public void setClientId(String clientId){
-		this.clientId = clientId;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "CLIENT_ID")
+	public ClientEntity getClient() {
+		return client;
 	}
+
+	public void setClient(ClientEntity client) {
+		this.client = client;
+	}
+
 	/**
 	 *方法: 取得java.lang.String
 	 *@return: java.lang.String  类型

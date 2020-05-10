@@ -49,6 +49,7 @@ public class AccountEntity implements java.io.Serializable {
 
 	private ClientEntity client;
 	private String hotelInfo;
+	private String status;
 	
 	/**
 	 *方法: 取得java.lang.String
@@ -226,5 +227,14 @@ public class AccountEntity implements java.io.Serializable {
 
 	public void setHotelInfo(String hotelInfo) {
 		this.hotelInfo = hotelInfo;
+	}
+
+	@Column(name ="status",nullable=true,length=1)
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

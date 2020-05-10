@@ -100,7 +100,8 @@ function reloadRandCodeImage() {
       success : function(data) {
         var d = $.parseJSON(data);
         if (d.success) {
-          if (d.attributes.orgNum > 1) {
+            window.location.href = actionurl;
+          /*if (d.attributes.orgNum > 1) {
           	  //用户拥有多个部门，需选择部门进行登录
         	  var title, okButton;
               if($("#langCode").val() == 'en') {
@@ -151,7 +152,7 @@ function reloadRandCodeImage() {
             });
           } else {
             window.location.href = actionurl;
-          }
+          }*/
        } else {
 			showErrorMsg(d.msg);
 		  	/*if(d.msg === "用户名或密码错误" || d.msg === "验证码错误")

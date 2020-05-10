@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.yunzhi.service.UserClientServiceI;
 import org.jeecgframework.core.util.*;
+import org.jeecgframework.web.system.pojo.base.TSRole;
 import org.jeecgframework.web.system.pojo.base.TSRoleUser;
 import org.jeecgframework.web.system.pojo.base.TSUser;
 import org.slf4j.Logger;
@@ -114,15 +115,59 @@ public class ClientController extends BaseController {
 	 * @param response
 	 * @param dataGrid
 	 */
-
 	@RequestMapping(params = "datagrid")
 	public void datagrid(ClientEntity client,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
 		CriteriaQuery cq = new CriteriaQuery(ClientEntity.class, dataGrid);
 		//查询条件组装器
 		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, client, request.getParameterMap());
+		TSUser tsUser = ResourceUtil.getSessionUser();
+		List<TSRoleUser> rUser = systemService.findByProperty(TSRoleUser.class, "TSUser.id", tsUser.getId());
+		TSRole role = rUser.get(0).getTSRole();
+		String roleCode = role.getRoleCode();
+		String departId = null;
+		String sql;
+		Map<String, Object> map;
+		List<TSRoleUser> roleUser = null;
+		//单独处理主管角色
+		if("charge".equals(roleCode)) {
+			sql = "select d.id from t_s_user_org uo join t_s_depart d on uo.org_id=d.id where d.tier='3' and uo.user_id=?";
+			map = systemService.findOneForJdbc(sql, tsUser.getId());
+			if(map == null) {
+				sql = "select d.id from t_s_user_org uo join t_s_depart d on uo.org_id=d.id where d.tier='2' and uo.user_id=?";
+				map = systemService.findOneForJdbc(sql, tsUser.getId());
+			}
+			departId = (String) map.get("id");
+			TSRole tsRole = systemService.findUniqueByProperty(TSRole.class, "roleCode", "staff");
+			roleUser = systemService.findByProperty(TSRoleUser.class, "TSRole.id", tsRole.getId());
+		}
+		String userId = null;
+		String[] staffes = null;
+		//单独处理主管角色
+		if("charge".equals(roleCode)) {
+			if (roleUser.size() > 0) {
+				staffes = new String[roleUser.size()];
+				for(int i = 0; i < roleUser.size(); i++){
+					userId = roleUser.get(i).getTSUser().getId();
+					sql = "select uo.id,bu.username from t_s_user_org uo join t_s_base_user bu on uo.user_id=bu.id join t_s_depart d on uo.org_id=d.id " +
+							"where d.id=? and uo.user_id=?";
+					map = systemService.findOneForJdbc(sql, departId, userId);
+					if(map != null) {
+						staffes[i] = (String) map.get("username");
+					}
+				}
+			}else {
+			}
+		}
+		//单独处理员工角色
+		else if("staff".equals(roleCode)) {
+			staffes = new String[1];
+			staffes[0] = tsUser.getUserName();
+		}
 		try{
-		//自定义追加查询条件
-		
+			//自定义追加查询条件
+			if(staffes != null) {
+				cq.in("createBy", staffes);
+			}
 		}catch (Exception e) {
 			throw new BusinessException(e.getMessage());
 		}
@@ -149,11 +194,58 @@ public class ClientController extends BaseController {
 		calendar.add(calendar.DATE,1);//把日期往后增加一天.整数往后推,负数往前移动
 		Date tomorrowDate = calendar.getTime(); //这个时间就是日期往后推一天的结果
 		String tomorrow = datetimeFormat.format(tomorrowDate);
+
+		TSUser tsUser = ResourceUtil.getSessionUser();
+		List<TSRoleUser> rUser = systemService.findByProperty(TSRoleUser.class, "TSUser.id", tsUser.getId());
+		TSRole role = rUser.get(0).getTSRole();
+		String roleCode = role.getRoleCode();
+		String departId = null;
+		String sql;
+		Map<String, Object> map;
+		List<TSRoleUser> roleUser = null;
+		//单独处理主管角色
+		if("charge".equals(roleCode)) {
+			sql = "select d.id from t_s_user_org uo join t_s_depart d on uo.org_id=d.id where d.tier='3' and uo.user_id=?";
+			map = systemService.findOneForJdbc(sql, tsUser.getId());
+			if(map == null) {
+				sql = "select d.id from t_s_user_org uo join t_s_depart d on uo.org_id=d.id where d.tier='2' and uo.user_id=?";
+				map = systemService.findOneForJdbc(sql, tsUser.getId());
+			}
+			departId = (String) map.get("id");
+			TSRole tsRole = systemService.findUniqueByProperty(TSRole.class, "roleCode", "staff");
+			roleUser = systemService.findByProperty(TSRoleUser.class, "TSRole.id", tsRole.getId());
+		}
+		String userId = null;
+		String[] staffes = null;
+		//单独处理主管角色
+		if("charge".equals(roleCode)) {
+			if (roleUser.size() > 0) {
+				staffes = new String[roleUser.size()];
+				for(int i = 0; i < roleUser.size(); i++){
+					userId = roleUser.get(i).getTSUser().getId();
+					sql = "select uo.id,bu.username from t_s_user_org uo join t_s_base_user bu on uo.user_id=bu.id join t_s_depart d on uo.org_id=d.id " +
+							"where d.id=? and uo.user_id=?";
+					map = systemService.findOneForJdbc(sql, departId, userId);
+					if(map != null) {
+						staffes[i] = (String) map.get("username");
+					}
+				}
+			}else {
+			}
+		}
+		//单独处理员工角色
+		else if("staff".equals(roleCode)) {
+			staffes = new String[1];
+			staffes[0] = tsUser.getUserName();
+		}
+
 		try{
 			//自定义追加查询条件
 			cq.ge("createDate", datetimeFormat.parse(datetimeFormat.format(nowDate) + " 00:00:00"));
 			cq.le("createDate", datetimeFormat.parse(tomorrow + " 00:00:00"));
-			cq.add();
+			if(staffes != null) {
+				cq.in("createBy", staffes);
+			}
 		}catch (Exception e) {
 			throw new BusinessException(e.getMessage());
 		}
@@ -218,7 +310,6 @@ public class ClientController extends BaseController {
 	/**
 	 * 添加客户表
 	 * 
-	 * @param ids
 	 * @return
 	 */
 	@RequestMapping(params = "doAdd")
@@ -230,12 +321,15 @@ public class ClientController extends BaseController {
 		TSUser user = ResourceUtil.getSessionUser();
 		List<TSRoleUser> rUsers = systemService.findByProperty(TSRoleUser.class, "TSUser.id", user.getId());
 		try{
+			//设置回款金额为0
+			client.setAmount((double) 0);
 			clientService.save(client);
 			//保存员工客户关联表记录
 			UserClientEntity userClient = new UserClientEntity();
-			userClient.setClientId(client.getId());
-			userClient.setUserId(user.getId());
-			userClient.setType(rUsers.get(0).getTSRole().getRoleType());
+			userClient.setClient(client);
+			userClient.setUser(user);
+			//0表示是员工与客户关系
+			userClient.setType("0");
 			userClientService.save(userClient);
 			systemService.addLog(message, Globals.Log_Type_INSERT, Globals.Log_Leavel_INFO);
 		}catch(Exception e){
@@ -250,7 +344,6 @@ public class ClientController extends BaseController {
 	/**
 	 * 更新客户表
 	 * 
-	 * @param ids
 	 * @return
 	 */
 	@RequestMapping(params = "doUpdate")
@@ -467,5 +560,25 @@ public class ClientController extends BaseController {
 		}
 
 		return Result.success();
+	}
+
+	/**
+	 * 检查唯一标识
+	 * @param postid
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(params = "checkPostid")
+	@ResponseBody
+	public AjaxJson checkPostid(String postid, HttpServletRequest request) {
+		String message = null;
+		AjaxJson j = new AjaxJson();
+		List<ClientEntity> clients = systemService.findByProperty(ClientEntity.class, "postid", postid);
+		if(clients.size() > 0) {
+			message = "酒店唯一标识已存在，请重新输入!";
+			j.setSuccess(false);
+		}
+		j.setMsg(message);
+		return  j;
 	}
 }

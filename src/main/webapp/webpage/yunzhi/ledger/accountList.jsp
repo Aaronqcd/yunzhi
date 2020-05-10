@@ -21,7 +21,7 @@
 			<button onclick="deleteALLSelect('批量删除','accountController.do?doBatchDel','accountList',600,400)" id="btn_delete" class="btn btn-danger btn-sm">
 				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> 批量删除
 			</button>--%>
-			<button onclick="detail('查看','accountController.do?goUpdate','accountList',600,400)" class="btn btn-info btn-sm">
+			<button onclick="detail('查看','accountController.do?goDetail','accountList',600,400)" class="btn btn-info btn-sm">
 				<span class="glyphicon glyphicon-search" aria-hidden="true"></span> 查看
 			</button>
 			<%--<button onclick="ImportXls('导入','','accountList',600,400)" id="btn_download" class="btn btn-info btn-sm">

@@ -99,21 +99,72 @@ public class RechargeRecordController extends BaseController {
 	}
 
 	/**
+	 * 客户列表 查看充值明细
+	 * @param clientId
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(params = "newList")
+	public ModelAndView newList(String clientId, HttpServletRequest request) {
+		request.setAttribute("clientId", clientId);
+		return new ModelAndView("yunzhi/rechargerecord/newList");
+	}
+
+	/**
 	 * easyui AJAX请求数据
 	 * 
 	 * @param request
 	 * @param response
 	 * @param dataGrid
 	 */
-
 	@RequestMapping(params = "datagrid")
 	public void datagrid(RechargeRecordEntity rechargeRecord,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
 		CriteriaQuery cq = new CriteriaQuery(RechargeRecordEntity.class, dataGrid);
 		//查询条件组装器
 		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, rechargeRecord, request.getParameterMap());
+		TSUser tsUser = ResourceUtil.getSessionUser();
 		try{
-		//自定义追加查询条件
-		
+			//自定义追加查询条件
+			if(tsUser != null) {
+				String sql = "select id from tb_account where user_id=?";
+				Map<String, Object> map = systemService.findOneForJdbc(sql, tsUser.getId());
+				if(map != null) {
+					cq.eq("account.id", map.get("id"));
+				}
+			}
+		}catch (Exception e) {
+			throw new BusinessException(e.getMessage());
+		}
+		cq.add();
+		this.rechargeRecordService.getDataGridReturn(cq, true);
+		List<RechargeRecordEntity> rechargeRecords = dataGrid.getResults();
+		Map<String,Map<String,Object>> extMap = new HashMap<String, Map<String,Object>>();
+		for(RechargeRecordEntity temp : rechargeRecords){
+			//此为针对原来的行数据，拓展的新字段
+			Map m = new HashMap();
+			m.put("hotelInfo", temp.getAccount().getHotelInfo());
+			extMap.put(temp.getId(), m);
+		}
+		TagUtil.datagrid(response, dataGrid, extMap);
+	}
+
+	@RequestMapping(params = "newDatagrid")
+	public void newDatagrid(RechargeRecordEntity rechargeRecord,String clientId,HttpServletRequest request, HttpServletResponse response, DataGrid dataGrid) {
+		CriteriaQuery cq = new CriteriaQuery(RechargeRecordEntity.class, dataGrid);
+		//查询条件组装器
+		org.jeecgframework.core.extend.hqlsearch.HqlGenerateUtil.installHql(cq, rechargeRecord, request.getParameterMap());
+		try{
+			//自定义追加查询条件
+			if(clientId != null) {
+				String sql = "select id from tb_account where client_id=?";
+				Map<String, Object> map = systemService.findOneForJdbc(sql, clientId);
+				if(map != null) {
+					cq.eq("account.id", map.get("id"));
+				}
+				else {
+					cq.eq("account.id", "@1");
+				}
+			}
 		}catch (Exception e) {
 			throw new BusinessException(e.getMessage());
 		}

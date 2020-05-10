@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.kisso.SSOHelper;
 import com.baomidou.kisso.SSOToken;
 import com.baomidou.kisso.common.util.HttpUtil;
+import com.yunzhi.entity.InviteCodeEntity;
+import com.yunzhi.service.InviteCodeServiceI;
 import net.sf.json.JSONArray;
 import org.apache.commons.lang.StringUtils;
 import org.jeecgframework.core.common.controller.BaseController;
@@ -34,6 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -49,6 +53,8 @@ public class LoginController extends BaseController{
 	private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 	private SystemService systemService;
 	private UserService userService;
+	@Autowired
+	private InviteCodeServiceI inviteCodeService;
 	@Resource
 	private ClientManager clientManager;
 
@@ -69,7 +75,10 @@ public class LoginController extends BaseController{
 		String message;
 		AjaxJson j = new AjaxJson();
 		TSUser users = systemService.findUniqueByProperty(TSUser.class, "userName",user.getUserName());
-		TSDepart depart = systemService.findUniqueByProperty(TSDepart.class, "departname","公司");
+//		TSDepart depart = systemService.findUniqueByProperty(TSDepart.class, "departname","公司");
+		String sql = "select id from t_s_depart where address=? and tier = 2";
+		Map<String, Object> map = systemService.findOneForJdbc(sql, user.getProvince());
+		String departId = (String) map.get("id");
 		String roleCode = "";
 		if("1".equals(role)) {
 			roleCode = "partner";
@@ -80,24 +89,41 @@ public class LoginController extends BaseController{
 		else if("3".equals(role)) {
 			roleCode = "staff";
 		}
+		String inviteSql = "select * from tb_invite_code c where c.invite_code=? and c.status='0'";
+		List<Map<String, Object>> codeMap = systemService.findForJdbc(inviteSql, user.getInviteCode());
+		if(codeMap.size() == 0) {
+			message = "该邀请码不存在或已被使用!";
+			j.setSuccess(false);
+			j.setMsg(message);
+			log.info("["+IpUtil.getIpAddr(req)+"]"+message);
+			return j;
+		}
 		TSRole tsRole = systemService.findUniqueByProperty(TSRole.class, "roleCode",roleCode);
 		Short logType=Globals.Log_Type_UPDATE;
 		if (users != null) {
 			message = "用户: " + users.getUserName() + "已经存在";
+			j.setSuccess(false);
 		} else {
 			user.setPassword(PasswordUtil.encrypt(user.getUserName(), oConvertUtils.getString(req.getParameter("password")), PasswordUtil.getStaticSalt()));
 //			user.setStatus(Globals.User_Normal);
 			user.setDeleteFlag(Globals.Delete_Normal);
 			//默认添加为系统用户
 			user.setUserType(Globals.USER_TYPE_SYSTEM);
-			user.setDepartid(depart.getId());
-			this.userService.saveOrUpdate(user, depart.getId().split(","), tsRole.getId().split(","));
+			user.setDepartid(departId);
+			this.userService.saveOrUpdate(user, departId.split(","), tsRole.getId().split(","));
+			Map<String, Object> m = codeMap.get(0);
+			InviteCodeEntity inviteCode = inviteCodeService.getEntity(InviteCodeEntity.class, (Serializable) m.get("id"));
+			inviteCode.setUser(user);
+			inviteCode.setStatus("1");
+			Date nowDate = new Date();
+			inviteCode.setUseDate(nowDate);
+			systemService.saveOrUpdate(inviteCode);
 			message = "用户: " + user.getUserName() + "注册资料提交成功";
 			logType=Globals.Log_Type_INSERT;
 		}
 		systemService.addLog(message, logType, Globals.Log_Leavel_INFO);
 		j.setMsg(message);
-		log.info("["+IpUtil.getIpAddr(req)+"][注册资料提交成功]"+message);
+		log.info("["+IpUtil.getIpAddr(req)+"]"+message);
 		return j;
 	}
 
@@ -181,7 +207,10 @@ public class LoginController extends BaseController{
 					Long orgNum = systemService.getCountForJdbcParam("select count(1) from t_s_user_org where user_id = ?",u.getId());
 					if (orgNum > 1) {
 						attrMap.put("orgNum", orgNum);
-						attrMap.put("user", u);
+//						attrMap.put("user", u);
+						Map<String, Object> userOrgMap = systemService.findOneForJdbc("select org_id as orgId from t_s_user_org uo " +
+								"join t_s_depart d on uo.org_id=d.id where d.tier='1' and user_id=?", u.getId());
+						userService.saveLoginUserInfo(req, u, (String) userOrgMap.get("orgId"));
 					} else {
 						Map<String, Object> userOrgMap = systemService.findOneForJdbc("select org_id as orgId from t_s_user_org where user_id=?", u.getId());
 						userService.saveLoginUserInfo(req, u, (String) userOrgMap.get("orgId"));

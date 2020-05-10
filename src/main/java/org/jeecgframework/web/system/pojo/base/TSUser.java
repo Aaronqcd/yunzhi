@@ -47,7 +47,8 @@ public class TSUser extends TSBaseUser implements java.io.Serializable {
 	/**修改人名称*/
 	private java.lang.String updateName;
 	private String province;//省份
-	
+	private String inviteCode;//邀请码
+
 	@Column(name = "dev_flag", length = 2)
 	public String getDevFlag() {
 		return devFlag;
@@ -284,6 +285,15 @@ public class TSUser extends TSBaseUser implements java.io.Serializable {
 
 	public void setProvince(String province) {
 		this.province = province;
+	}
+
+	@Transient
+	public String getInviteCode() {
+		return inviteCode;
+	}
+
+	public void setInviteCode(String inviteCode) {
+		this.inviteCode = inviteCode;
 	}
 
 	@Override
